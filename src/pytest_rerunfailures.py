@@ -140,6 +140,13 @@ def pytest_addoption(parser):
         "'rerun test summary info' section, which is emitted automatically "
         "when this flag is set.",
     )
+    group.addoption(
+        "--explanations-mandatory",
+        action="store_true",
+        dest="explanations_mandatory",
+        default=False,
+        help="Require explanation= for flaky markers.",
+    )
 
     arg_type = "string"
     parser.addini("reruns", RERUNS_DESC, type=arg_type)
@@ -148,6 +155,12 @@ def pytest_addoption(parser):
         "reruns_delay_backoff_factor",
         RERUNS_DELAY_BACKOFF_FACTOR_DESC,
         type=arg_type,
+    )
+    parser.addini(
+        "explanations_mandatory",
+        "Require explanation= on flaky markers.",
+        type="bool",
+        default=False,
     )
 
 
@@ -258,6 +271,9 @@ def get_reruns_delay_backoff_factor(item):
         )
 
     return factor
+
+def get_explanations_mandatory(config):
+    return config.getvalue("explanations_mandatory")
 
 
 def get_reruns_condition(item):
@@ -523,7 +539,7 @@ def pytest_configure(config):
     # add flaky marker
     config.addinivalue_line(
         "markers",
-        "flaky(reruns=1, reruns_delay=0, reruns_delay_backoff_factor=1.0): mark "
+        "flaky(reruns=1, reruns_delay=0, reruns_delay_backoff_factor=1.0, explanation='...'): mark "
         "test to re-run up to 'reruns' times. Add a delay of 'reruns_delay' "
         "seconds between re-runs, multiplied by 'reruns_delay_backoff_factor' "
         "after each attempt for an exponential backoff.",
@@ -808,6 +824,23 @@ def pytest_runtest_protocol(item, nextitem):
         item.ihook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
 
     return True
+
+def pytest_collection_modifyitems(config, items):
+    if not config.getvalue("explanations_mandatory"):
+        return
+
+    for item in items:
+        marker = _get_marker(item)
+
+        if marker is None:
+            continue
+
+        explanation = marker.kwargs.get("explanation")
+
+        if not isinstance(explanation, str) or not explanation.strip():
+            raise pytest.UsageError(
+                f"{item.nodeid}: flaky marker requires explanation="
+            )
 
 
 def pytest_report_teststatus(report):
