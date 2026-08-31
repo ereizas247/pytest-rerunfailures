@@ -42,6 +42,7 @@ dynamic = [
 dependencies = [
   "packaging>=17.1",
   "pytest!=8.2.2,>=8.2",
+  "matplotlib @ https://github.com/matplotlib/matplotlib@17552e2153dc2458dea217037c7b0db01b7736ab
 ]
 urls = { Homepage = "https://github.com/pytest-dev/pytest-rerunfailures" }
 
