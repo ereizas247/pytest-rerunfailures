@@ -42,7 +42,7 @@ dynamic = [
 dependencies = [
   "packaging>=17.1",
   "pytest!=8.2.2,>=8.2",
-  "pydantic @ git+https://github.com/pydantic/PYDANTIC@v1.10.26"
+  "pydantic == 1.10.26"
 ]
 urls = { Homepage = "https://github.com/pytest-dev/pytest-rerunfailures" }
 
