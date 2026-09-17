@@ -41,12 +41,27 @@ dynamic = [
 ]
 dependencies = [
   "packaging>=17.1",
+  "pydantic==1.10.26",
   "pytest!=8.2.2,>=8.2",
-  "pydantic == 1.10.26"
 ]
 urls = { Homepage = "https://github.com/pytest-dev/pytest-rerunfailures" }
 
 entry-points.pytest11.rerunfailures = "pytest_rerunfailures"
+
+[dependency-groups]
+test = [
+  "pytest-xdist",
+]
+docs = [
+  "sphinx",
+  "sphinx-rtd-theme",
+]
+lint = [
+  "pre-commit",
+]
+build = [
+  "build",
+]
 
 [tool.setuptools.dynamic]
 readme = { file = [ "HEADER.rst", "README.rst", "CHANGES.rst" ] }

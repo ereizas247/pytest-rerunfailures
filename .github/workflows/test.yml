@@ -44,34 +44,23 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
-      - name: Get pip cache dir
-        id: pip-cache
-        run: |
-          echo "::set-output name=dir::$(pip cache dir)"
-
-      - name: Cache
-        uses: actions/cache@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          path: ${{ steps.pip-cache.outputs.dir }}
-          key:
-            ${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.pytest-version }}-v1-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.pytest-version }}-v1-
+          enable-cache: true
+          cache-dependency-glob: uv.lock
 
       - name: Install dependencies
-        run: |
-          python -m pip install -U pip
-          if [[ '${{ matrix.pytest-version }}' == 'main' ]]; then
-            python -m pip install git+https://github.com/pytest-dev/pytest.git@main#egg=pytest
-          else
-            python -m pip install pytest==${{ matrix.pytest-version }}
-          fi
-          python -m pip install -e .
+        run: uv sync --locked --group test
 
       - name: Tests
         shell: bash
         run: |
-          pytest
+          if [[ '${{ matrix.pytest-version }}' == 'main' ]]; then
+            uv run --group test --with "pytest @ git+https://github.com/pytest-dev/pytest.git@56a92c19d4a71152c594726efc9deb5f0e126e99" pytest
+          else
+            uv run --group test --with "pytest==${{ matrix.pytest-version }}" pytest
+          fi
 
   platform:
     # Test devel setup on different platforms.
@@ -91,11 +80,15 @@ jobs:
           python-version: '3.x'
           architecture: 'x64'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
       - name: Development setup on platform ${{ matrix.os }}
         run: |
-          python -m pip install -U pip
-          python -m pip install pytest
-          python -m pip install -e .
+          uv sync --locked --group test
 
       - name: Tests
-        run: pytest tests/
+        run: uv run pytest tests/
