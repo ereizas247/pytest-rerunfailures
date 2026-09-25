@@ -48,9 +48,6 @@ urls = { Homepage = "https://github.com/pytest-dev/pytest-rerunfailures" }
 
 entry-points.pytest11.rerunfailures = "pytest_rerunfailures"
 
-[tool.uv.sources]
-pydantic = { git = "https://github.com/pydantic/pydantic.git", rev = "d771df98f3194ea2695a6a893e318b32381032c3" }
-
 [dependency-groups]
 test = [
   "pytest-xdist",
